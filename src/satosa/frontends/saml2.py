@@ -941,7 +941,7 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
 
         return config
 
-    def _add_entity_id(self, config, co_name):
+    def _add_entity_id(self, config, co_name, backend_name):
         """
         Use the CO name to construct the entity ID for the virtual IdP
         for the CO and add it to the config. Also add it to the
@@ -949,21 +949,23 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
 
         The entity ID has the form
 
-        {base_entity_id}/{co_name}
+        {base_entity_id}/{backend_name}/{co_name}
 
         :type context: The current context
         :type config: satosa.satosa_config.SATOSAConfig
         :type co_name: str
+        :type backend_name: str
         :rtype: satosa.satosa_config.SATOSAConfig
 
         :param context:
         :param config: satosa proxy config
         :param co_name: CO name
+        :param backend_name: Backend name
 
         :return: config with updated entity ID
         """
         base_entity_id = config['entityid']
-        co_entity_id = "{}/{}".format(base_entity_id, quote_plus(co_name))
+        co_entity_id = "{}/{}/{}".format(base_entity_id, quote_plus(backend_name), quote_plus(co_name))
         config['entityid'] = co_entity_id
 
         return config
@@ -1050,7 +1052,7 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
         idp_config = self._add_endpoints_to_config(
             idp_config, co_name, backend_name
         )
-        idp_config = self._add_entity_id(idp_config, co_name)
+        idp_config = self._add_entity_id(idp_config, co_name, backend_name)
         context.decorate(self.KEY_CO_ENTITY_ID, idp_config['entityid'])
 
         # Use the overwritten IdP config to generate a pysaml2 config object

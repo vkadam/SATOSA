@@ -965,7 +965,17 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
         :return: config with updated entity ID
         """
         base_entity_id = config['entityid']
-        co_entity_id = "{}/{}/{}".format(base_entity_id, quote_plus(backend_name), quote_plus(co_name))
+
+        """
+        replace = [
+            ("<backend>", quote_plus(backend_name)),
+            ("<co_name>", quote_plus(co_name))
+        ]
+        for _replace in replace:
+            base_entity_id = base_entity_id.replace(_replace[0], _replace[1])
+        """
+
+        co_entity_id = "{}/{}/{}".format(base_entity_id)
         config['entityid'] = co_entity_id
 
         return config

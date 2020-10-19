@@ -1169,13 +1169,12 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
         :param context: The current context
         :return: response with metadata
         """
-        # Using the context of the current request and saved state from the
-        # authentication request dynamically create an IdP instance.
-        context_copy = copy.deepcopy(context);
         # _create_co_virtual_idp needs co_name in state or at specific position in path,
         # updating state so that path can be flexible
-        context_copy.state[self.name] = {self.KEY_CO_NAME:co_name}
+        context.state[self.name][self.KEY_CO_NAME] = co_name
 
-        self.idp = self._create_co_virtual_idp(context_copy)
-        return super()._metadata_endpoint(context=context_copy);
+        # Using the context of the current request and saved state from the
+        # authentication request dynamically create an IdP instance.
+        self.idp = self._create_co_virtual_idp(context)
+        return super()._metadata_endpoint(context=context);
 

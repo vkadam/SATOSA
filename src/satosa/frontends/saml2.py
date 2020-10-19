@@ -477,7 +477,7 @@ class SAMLFrontend(FrontendModule, SAMLBaseModule):
         :param context: The current context
         :return: response with metadata
         """
-        msg = "Sending metadata response"
+        msg = "Sending metadata response for entityId = {}".format(self.idp.config.entityid)
         logline = lu.LOG_FMT.format(id=lu.get_session_id(context.state), message=msg)
         logger.debug(logline)
         metadata_string = create_metadata_string(None, self.idp.config, 4, None, None, None, None,
@@ -505,6 +505,7 @@ class SAMLFrontend(FrontendModule, SAMLBaseModule):
                                 functools.partial(self.handle_authn_request, binding_in=binding)))
 
         if self.expose_entityid_endpoint():
+            logger.debug("Exposing frontend entity endpoint = {}".format(self.idp.config.entityid))
             parsed_entity_id = urlparse(self.idp.config.entityid)
             url_map.append(("^{0}".format(parsed_entity_id.path[1:]),
                             self._metadata_endpoint))
@@ -966,17 +967,14 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
         """
         base_entity_id = config['entityid']
 
-        """
         replace = [
-            ("<backend>", quote_plus(backend_name)),
+            ("<backend_name>", quote_plus(backend_name)),
             ("<co_name>", quote_plus(co_name))
         ]
         for _replace in replace:
             base_entity_id = base_entity_id.replace(_replace[0], _replace[1])
-        """
 
-        co_entity_id = "{}/{}/{}".format(base_entity_id)
-        config['entityid'] = co_entity_id
+        config['entityid'] = base_entity_id
 
         return config
 
@@ -1149,4 +1147,32 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
                 logline = "Adding mapping {}".format(mapping)
                 logger.debug(logline)
 
+        if self.expose_entityid_endpoint():
+            for backend_name in backend_names:
+                for co_name in co_names:
+                    idp_config = self._add_entity_id(copy.deepcopy(self.idp_config), co_name, backend_name)
+                    entity_id = idp_config['entityid']
+                    logger.debug("Exposing frontend entity endpoint = {}".format(entity_id))
+                    parsed_entity_id = urlparse(entity_id)
+                    metadata_endpoint = "^{0}".format(parsed_entity_id.path[1:])
+                    the_callable = functools.partial(self._metadata_endpoint, co_name=co_name)
+                    url_to_callable_mappings.append((metadata_endpoint, the_callable))
+
         return url_to_callable_mappings
+
+    def _metadata_endpoint(self, context, co_name):
+        """
+        Endpoint for retrieving the virtual frontend metadata
+        :type context: satosa.context.Context
+        :rtype: satosa.response.Response
+
+        :param context: The current context
+        :return: response with metadata
+        """
+        # Using the context of the current request and saved state from the
+        # authentication request dynamically create an IdP instance.
+        context_copy = copy.deepcopy(context);
+        context_copy.state = {}
+        self.idp = self._create_co_virtual_idp(context_copy)
+        return super()._metadata_endpoint(context=context_copy);
+

@@ -1027,7 +1027,7 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
 
         return co_names
 
-    def _create_co_virtual_idp(self, context):
+    def _create_co_virtual_idp(self, context, co_name):
         """
         Create a virtual IdP to represent the CO.
 
@@ -1037,7 +1037,7 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
         :param context:
         :return: An idp server
         """
-        co_name = self._get_co_name(context)
+        co_name = co_name or self._get_co_name(context)
         context.decorate(self.KEY_CO_NAME, co_name)
 
         # Verify that we are configured for this CO. If the CO was not
@@ -1169,12 +1169,8 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
         :param context: The current context
         :return: response with metadata
         """
-        # _create_co_virtual_idp needs co_name in state or at specific position in path,
-        # updating state so that path can be flexible
-        context.state[self.name][self.KEY_CO_NAME] = co_name
-
         # Using the context of the current request and saved state from the
         # authentication request dynamically create an IdP instance.
-        self.idp = self._create_co_virtual_idp(context)
+        self.idp = self._create_co_virtual_idp(context, co_name=co_name)
         return super()._metadata_endpoint(context=context);
 

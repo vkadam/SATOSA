@@ -1027,7 +1027,7 @@ class SAMLVirtualCoFrontend(SAMLFrontend):
 
         return co_names
 
-    def _create_co_virtual_idp(self, context, co_name):
+    def _create_co_virtual_idp(self, context, co_name=None):
         """
         Create a virtual IdP to represent the CO.
 

@@ -54,6 +54,11 @@ class PrimaryIdentifier(satosa.micro_services.base.ResponseMicroService):
 
             # Get the values asserted by the IdP for the configured list of attribute names for this candidate
             # and substitute None if the IdP did not assert any value for a configured attribute.
+            do_name_id = None
+            if 'name_id' in candidate['attribute_names']:
+                do_name_id = True
+                candidate['attribute_names'].remove('name_id')
+
             values = [ attributes.get(attribute_name, [None])[0] for attribute_name in candidate['attribute_names'] ]
             msg = "{} Found candidate values {}".format(logprefix, values)
             logline = lu.LOG_FMT.format(id=lu.get_session_id(context.state), message=msg)
@@ -62,8 +67,7 @@ class PrimaryIdentifier(satosa.micro_services.base.ResponseMicroService):
             # If one of the configured attribute names is name_id then if there is also a configured
             # name_id_format add the value for the NameID of that format if it was asserted by the IdP
             # or else add the value None.
-            if 'name_id' in candidate['attribute_names']:
-                candidate_nameid_value = None
+            if do_name_id:
                 candidate_nameid_value = None
                 candidate_name_id_format = candidate.get('name_id_format')
                 name_id_value = data.subject_id

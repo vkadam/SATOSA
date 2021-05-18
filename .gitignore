@@ -4,6 +4,7 @@ _build
 *.iml
 *.pyc
 *.log*
+venv/
 
 *.xml
 *.db

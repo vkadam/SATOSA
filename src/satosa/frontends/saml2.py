@@ -186,7 +186,9 @@ class SAMLFrontend(FrontendModule, SAMLBaseModule):
         :param idp: The saml frontend idp server
         :return: response
         """
-        req_info = idp.parse_authn_request(context.request["SAMLRequest"], binding_in)
+        relay_state = context.request.get("RelayState")
+        req_info = idp.parse_authn_request(context.request["SAMLRequest"], binding_in, relayState=relay_state,
+                                           sigalg=context.request.get("SigAlg"), signature=context.request.get("Signature"))
         authn_req = req_info.message
         msg = "{}".format(authn_req)
         logline = lu.LOG_FMT.format(id=lu.get_session_id(context.state), message=msg)
@@ -204,8 +206,7 @@ class SAMLFrontend(FrontendModule, SAMLBaseModule):
             return ServiceError("Incorrect request from requester: %s" % e)
 
         requester = resp_args["sp_entity_id"]
-        context.state[self.name] = self._create_state_data(context, idp.response_args(authn_req),
-                                                           context.request.get("RelayState"))
+        context.state[self.name] = self._create_state_data(context, idp.response_args(authn_req), relay_state)
 
         subject = authn_req.subject
         name_id_value = subject.name_id.text if subject else None

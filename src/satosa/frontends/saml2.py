@@ -187,7 +187,7 @@ class SAMLFrontend(FrontendModule, SAMLBaseModule):
         :return: response
         """
         relay_state = context.request.get("RelayState")
-        req_info = idp.parse_authn_request(context.request["SAMLRequest"], binding_in, relayState=relay_state,
+        req_info = idp.parse_authn_request(context.request["SAMLRequest"], binding_in, relay_state=relay_state,
                                            sigalg=context.request.get("SigAlg"), signature=context.request.get("Signature"))
         authn_req = req_info.message
         msg = "{}".format(authn_req)

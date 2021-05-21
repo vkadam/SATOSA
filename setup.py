@@ -17,7 +17,7 @@ setup(
     install_requires=[
         "pyop >= 3.0.1",
         # "pysaml2 >= 6.5.1",
-        "pysaml2 @ git+https://stash.cengage.com/scm/iam/pysaml2-github-mirror@master",
+        "pysaml2 @ git+https://stash.cengage.com/scm/iam/pysaml2-github-mirror@7.0.1-PATCH.1",
         "pycryptodomex",
         "requests",
         "PyYAML",
